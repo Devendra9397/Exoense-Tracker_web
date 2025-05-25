@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Expense Tracker</h1>
+    {% if alert %}<p class="alert">{{ alert }}</p>{% endif %}
+    
+    <form action="{{ url_for('budget') }}" method="POST">
+        <label>Set Monthly Budget (₹):</label>
+        <input type="number" name="budget" value="{{ budget }}" required />
+        <button type="submit">Update</button>
+    </form>
+
+    <a href="{{ url_for('add') }}">➕ Add Expense</a>
+    <h2>Summary: ₹{{ summary.total }}</h2>
+    <canvas id="chart"></canvas>
+
+    <ul>
+        {% for exp in expenses %}
+            <li>{{ exp[1] }} - ₹{{ exp[2] }} - {{ exp[3] }} - {{ exp[4] }}
+                <a href="{{ url_for('delete', expense_id=exp[0]) }}">❌</a></li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        const labels = {{ summary.by_category | map(attribute=0) | list | tojson }};
+        const dataPoints = {{ summary.by_category | map(attribute=1) | list | tojson }};
+
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Spending by Category',
+                data: dataPoints,
+                backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56']
+            }]
+        };
+
+        new Chart(document.getElementById('chart'), {
+            type: 'pie',
+            data: data
+        });
+    </script>
+</body>
+</html>
